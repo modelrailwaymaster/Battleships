@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { getGameSocket } from "../hooks/useGameSocket";
-import type { PublicRoomState, ServerResponse } from "../types/room";
+import { useToast } from "../../components/Toast";
+import { getGameSocket } from "../../hooks/useGameSocket";
+import type { PublicRoomState, ServerResponse } from "../../types/room";
 
 interface HostSetupProps {
   onCreated: (room: PublicRoomState) => void;
@@ -9,8 +10,8 @@ interface HostSetupProps {
 
 function HostSetup({ onCreated, onBack }: HostSetupProps) {
   const [hostName, setHostName] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   function createRoom(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -18,18 +19,17 @@ function HostSetup({ onCreated, onBack }: HostSetupProps) {
     const socket = getGameSocket();
 
     if (!socket?.connected) {
-      setError("Not connected to the server. Please try again.");
+      showToast("Error", "Not connected to the server. Please try again.");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     socket.emit("host:create", { hostName }, (response: ServerResponse) => {
       setLoading(false);
 
       if (!response.success || !response.room) {
-        setError(response.message ?? "Unable to create room.");
+        showToast("Error", "Unable to create room: " + response.message);
         return;
       }
 
@@ -38,7 +38,7 @@ function HostSetup({ onCreated, onBack }: HostSetupProps) {
   }
 
   return (
-    <main>
+    <div>
       <h1>Host a game</h1>
       <p>Create a room for other players to join.</p>
 
@@ -53,8 +53,6 @@ function HostSetup({ onCreated, onBack }: HostSetupProps) {
           autoComplete="nickname"
         />
 
-        {error && <p role="alert">{error}</p>}
-
         <button type="submit" disabled={loading}>
           {loading ? "Creating room..." : "Create room"}
         </button>
@@ -63,7 +61,7 @@ function HostSetup({ onCreated, onBack }: HostSetupProps) {
           Back
         </button>
       </form>
-    </main>
+    </div>
   );
 }
 

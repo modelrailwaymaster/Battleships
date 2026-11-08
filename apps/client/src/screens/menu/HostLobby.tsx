@@ -1,31 +1,31 @@
 import { useState } from "react";
-import { getGameSocket } from "../hooks/useGameSocket";
-import type { PublicRoomState, ServerResponse } from "../types/room";
+import { useToast } from "../../components/Toast";
+import { getGameSocket } from "../../hooks/useGameSocket";
+import type { PublicRoomState, ServerResponse } from "../../types/room";
 
 interface HostLobbyProps {
   room: PublicRoomState;
 }
 
 function HostLobby({ room }: HostLobbyProps) {
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   function emitHostAction(event: string, payload?: object) {
     const socket = getGameSocket();
 
     if (!socket?.connected) {
-      setError("Disconnected from the server.");
+      showToast("Error", "Disconnected from the server.");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     socket.emit(event, payload, (response: ServerResponse) => {
       setLoading(false);
 
       if (!response.success) {
-        setError(response.message ?? "Something went wrong.");
+        showToast("Error", "Something went wrong: " + response.message);
       }
     });
   }
@@ -45,7 +45,7 @@ function HostLobby({ room }: HostLobbyProps) {
   }
 
   return (
-    <main>
+    <div>
       <h1>Game lobby</h1>
       <p>You are hosting this game.</p>
 
@@ -65,11 +65,8 @@ function HostLobby({ room }: HostLobbyProps) {
             {room.players.map((player) => (
               <li key={player.id}>
                 {player.name}
-                {room.stage === "placement" && (
-                  <span>{player.ready ? " — Ready" : " — Not ready"}</span>
-                )}
-
-                {room.stage === "lobby" && (
+                {player.ready ? " — Ready" : " — Not Ready"}
+                {room.roomStage === "lobby" && (
                   <button
                     onClick={() => removePlayer(player.id)}
                     disabled={loading}
@@ -77,15 +74,16 @@ function HostLobby({ room }: HostLobbyProps) {
                     Remove
                   </button>
                 )}
+                {room.roomStage === "playing" &&
+                  room.gameStage === "placement" &&
+                  (player.shipsPlaced ? " — Placed" : " — Not Placed")}
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      {error && <p role="alert">{error}</p>}
-
-      {room.stage === "lobby" && (
+      {room.roomStage === "lobby" && (
         <section>
           <button onClick={toggleLock} disabled={loading}>
             {room.locked ? "Unlock lobby" : "Lock lobby"}
@@ -99,19 +97,7 @@ function HostLobby({ room }: HostLobbyProps) {
           </button>
         </section>
       )}
-
-      {room.stage === "placement" && (
-        <section>
-          <h2>Ship placement</h2>
-          <p>Waiting for players to finish placing their ships.</p>
-          <p>
-            Ready: {room.players.filter((p) => p.ready).length}
-            {" / "}
-            {room.players.length}
-          </p>
-        </section>
-      )}
-    </main>
+    </div>
   );
 }
 

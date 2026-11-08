@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { getGameSocket } from "../hooks/useGameSocket";
-import type { PublicRoomState, ServerResponse } from "../types/room";
+import { useToast } from "../../components/Toast";
+import { getGameSocket } from "../../hooks/useGameSocket";
+import type { PublicRoomState, ServerResponse } from "../../types/room";
 
 interface JoinGameProps {
   onJoined: (room: PublicRoomState, playerId: string) => void;
@@ -10,8 +11,8 @@ interface JoinGameProps {
 function JoinGame({ onJoined, onBack }: JoinGameProps) {
   const [playerName, setPlayerName] = useState("");
   const [roomCode, setRoomCode] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   function joinRoom(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,12 +20,11 @@ function JoinGame({ onJoined, onBack }: JoinGameProps) {
     const socket = getGameSocket();
 
     if (!socket?.connected) {
-      setError("Not connected to the server. Please try again.");
+      showToast("Error", "Disconnected from the server.");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     socket.emit(
       "player:join",
@@ -33,7 +33,7 @@ function JoinGame({ onJoined, onBack }: JoinGameProps) {
         setLoading(false);
 
         if (!response.success || !response.room || !response.playerId) {
-          setError(response.message ?? "Unable to join game.");
+          showToast("Error", "Unable to join room: " + response.message);
           return;
         }
 
@@ -43,12 +43,12 @@ function JoinGame({ onJoined, onBack }: JoinGameProps) {
   }
 
   return (
-    <main>
+    <div>
       <h1>Join a game</h1>
       <p>Enter the room code provided by the host.</p>
 
       <form onSubmit={joinRoom}>
-        <label htmlFor="player-name">Your name</label>
+        <label htmlFor="player-name">Your name: </label>
         <input
           id="player-name"
           value={playerName}
@@ -58,7 +58,7 @@ function JoinGame({ onJoined, onBack }: JoinGameProps) {
           autoComplete="nickname"
         />
 
-        <label htmlFor="room-code">Room code</label>
+        <label htmlFor="room-code">Room code: </label>
         <input
           id="room-code"
           value={roomCode}
@@ -68,8 +68,6 @@ function JoinGame({ onJoined, onBack }: JoinGameProps) {
           autoComplete="off"
         />
 
-        {error && <p role="alert">{error}</p>}
-
         <button type="submit" disabled={loading}>
           {loading ? "Joining..." : "Join game"}
         </button>
@@ -78,7 +76,7 @@ function JoinGame({ onJoined, onBack }: JoinGameProps) {
           Back
         </button>
       </form>
-    </main>
+    </div>
   );
 }
 

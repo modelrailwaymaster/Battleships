@@ -1,16 +1,20 @@
-export type RoomStage = "lobby" | "placement" | "playing" | "finished";
+export type GameStage = "lobby" | "placement" | "playing" | "finished";
+export type RoomStage = "setup" | "lobby" | "playing";
+export type RoomRole = "host" | "player" | "unknown";
 
 export interface RoomPlayer {
   id: string;
   name: string;
   ready: boolean;
+  shipsPlaced: boolean;
 }
 
 export interface PublicRoomState {
   code: string;
   hostName: string;
   players: RoomPlayer[];
-  stage: RoomStage;
+  roomStage: RoomStage;
+  gameStage: GameStage;
   locked: boolean;
 }
 

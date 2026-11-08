@@ -1,9 +1,9 @@
 import type { Coordinate, Game, Orientation } from "@battleships/game-engine";
 import { useState } from "react";
 
-import Button from "../components/Button";
-import GameBoard from "../components/GameBoard";
-import Header from "../components/Header";
+import Button from "../../components/Button";
+import GameBoard from "../../components/GameBoard";
+import Header from "../../components/TopNavBar";
 
 interface ShipPlacementProps {
   game: Game;

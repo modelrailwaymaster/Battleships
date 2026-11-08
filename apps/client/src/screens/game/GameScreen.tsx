@@ -1,8 +1,8 @@
 import type { Game } from "@battleships/game-engine";
 import { useState } from "react";
 
-import GameBoard from "../components/GameBoard";
-import Header from "../components/Header";
+import GameBoard from "../../components/GameBoard";
+import Header from "../../components/TopNavBar";
 
 interface GameScreenProps {
   game: Game;

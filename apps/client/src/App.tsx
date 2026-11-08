@@ -1,24 +1,40 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useToast } from "./components/Toast";
 import { getGameSocket, useGameSocket } from "./hooks/useGameSocket";
 
-import HostLobby from "./screens/HostLobby";
+import GameScreen from "./screens/game/GameScreen";
 import HostSetup from "./screens/HostSetup";
-import JoinGame from "./screens/JoinGame";
-import MainMenu from "./screens/MainMenu";
-import PlayerLobby from "./screens/playerLobby";
+import MainMenu from "./screens/menu/HostSetu";
+import HostLobby from "./screens/menu/MainMenustLobby";
+import PlayerLobby from "./screens/menu/PlayerLobby";
+import PlayerSetup from "./screens/menu/PlayerSetup";
 
-import type { PublicRoomState } from "./types/room";
-
-type Screen = "menu" | "host-setup" | "join-game" | "room";
-type RoomRole = "host" | "player";
+import type { PublicRoomState, RoomRole } from "./types/room";
 
 function App() {
   const { connected } = useGameSocket();
+  const { showToast } = useToast();
 
-  const [screen, setScreen] = useState<Screen>("menu");
+  const [role, setRole] = useState<RoomRole>("unknown");
   const [room, setRoom] = useState<PublicRoomState | null>(null);
-  const [role, setRole] = useState<RoomRole>("player");
-  const [notice, setNotice] = useState("");
+
+  function becomeHost() {
+    setRole("host");
+    setRoom(null);
+    showToast("Role Changed", "You became the host.");
+  }
+
+  function becomePlayer() {
+    setRole("player");
+    setRoom(null);
+    showToast("Role Changed", "You became a player.");
+  }
+
+  const returnToMenu = useCallback(() => {
+    setRole("unknown");
+    setRoom(null);
+    showToast("Role Changed", "Role Removed.");
+  }, [showToast]);
 
   useEffect(() => {
     if (!connected || !room) return;
@@ -31,15 +47,13 @@ function App() {
     }
 
     function handleRoomClosed(data: { message: string }) {
-      setNotice(data.message);
-      setRoom(null);
-      setScreen("menu");
+      showToast("Room Closed", data.message);
+      returnToMenu();
     }
 
     function handlePlayerRemoved(data: { message: string }) {
-      setNotice(data.message);
-      setRoom(null);
-      setScreen("menu");
+      showToast("Player Removed", data.message);
+      returnToMenu();
     }
 
     socket.on("room:updated", handleRoomUpdated);
@@ -51,65 +65,36 @@ function App() {
       socket.off("room:closed", handleRoomClosed);
       socket.off("player:removed", handlePlayerRemoved);
     };
-  }, [connected, room?.code]);
-
-  function handleRoomCreated(newRoom: PublicRoomState) {
-    setNotice("");
-    setRoom(newRoom);
-    setRole("host");
-    setScreen("room");
-  }
-
-  function handleRoomJoined(newRoom: PublicRoomState) {
-    setNotice("");
-    setRoom(newRoom);
-    setRole("player");
-    setScreen("room");
-  }
+  }, [connected, room, returnToMenu, showToast]);
 
   return (
-    <div className="app">
-      <header>
-        <span>Battleships</span>
-        <span>{connected ? "Connected" : "Disconnected"}</span>
-      </header>
-
-      {notice && (
-        <p role="alert">
-          {notice}
-          <button onClick={() => setNotice("")}>Dismiss</button>
-        </p>
+    <main className="app">
+      {role === "unknown" && (
+        <MainMenu onHost={becomeHost} onJoin={becomePlayer} />
       )}
 
-      {screen === "menu" && (
-        <MainMenu
-          onHost={() => setScreen("host-setup")}
-          onJoin={() => setScreen("join-game")}
-        />
-      )}
-
-      {screen === "host-setup" && (
-        <HostSetup
-          onCreated={handleRoomCreated}
-          onBack={() => setScreen("menu")}
-        />
-      )}
-
-      {screen === "join-game" && (
-        <JoinGame
-          onJoined={handleRoomJoined}
-          onBack={() => setScreen("menu")}
-        />
-      )}
-
-      {screen === "room" &&
-        room &&
-        (role === "host" ? (
-          <HostLobby room={room} />
+      {role === "host" &&
+        (room ? (
+          room.roomStage === "playing" ? (
+            <GameScreen room={room} role="host" />
+          ) : (
+            <HostLobby room={room} />
+          )
         ) : (
-          <PlayerLobby room={room} />
+          <HostSetup onCreated={setRoom} onBack={returnToMenu} />
         ))}
-    </div>
+
+      {role === "player" &&
+        (room ? (
+          room.roomStage === "playing" ? (
+            <GameScreen room={room} role="player" />
+          ) : (
+            <PlayerLobby room={room} />
+          )
+        ) : (
+          <PlayerSetup onJoined={setRoom} onBack={returnToMenu} />
+        ))}
+    </main>
   );
 }
 
