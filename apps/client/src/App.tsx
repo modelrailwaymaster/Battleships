@@ -3,9 +3,9 @@ import { useToast } from "./components/Toast";
 import { getGameSocket, useGameSocket } from "./hooks/useGameSocket";
 
 import GameScreen from "./screens/game/GameScreen";
-import HostSetup from "./screens/HostSetup";
-import MainMenu from "./screens/menu/HostSetu";
-import HostLobby from "./screens/menu/MainMenustLobby";
+import HostLobby from "./screens/menu/HostLobby";
+import HostSetup from "./screens/menu/HostSetup";
+import MainMenu from "./screens/menu/MainMenu";
 import PlayerLobby from "./screens/menu/PlayerLobby";
 import PlayerSetup from "./screens/menu/PlayerSetup";
 
