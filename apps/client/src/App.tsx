@@ -1,54 +1,116 @@
-import { Game } from "@battleships/game-engine";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getGameSocket, useGameSocket } from "./hooks/useGameSocket";
 
-import type { Screen } from "./types/ui";
-
-import GameScreen from "./screens/GameScreen";
+import HostLobby from "./screens/HostLobby";
+import HostSetup from "./screens/HostSetup";
+import JoinGame from "./screens/JoinGame";
 import MainMenu from "./screens/MainMenu";
-import PlayerSetup from "./screens/PlayerSetup";
-import ShipPlacement from "./screens/ShipPlacement";
+import PlayerLobby from "./screens/playerLobby";
 
-import "./App.css";
+import type { PublicRoomState } from "./types/room";
 
-export default function App() {
+type Screen = "menu" | "host-setup" | "join-game" | "room";
+type RoomRole = "host" | "player";
+
+function App() {
+  const { connected } = useGameSocket();
+
   const [screen, setScreen] = useState<Screen>("menu");
-  const [game, setGame] = useState<Game | null>(null);
+  const [room, setRoom] = useState<PublicRoomState | null>(null);
+  const [role, setRole] = useState<RoomRole>("player");
+  const [notice, setNotice] = useState("");
 
-  function startNewGame() {
-    setGame(null);
-    setScreen("player-setup");
+  useEffect(() => {
+    if (!connected || !room) return;
+
+    const socket = getGameSocket();
+    if (!socket) return;
+
+    function handleRoomUpdated(updatedRoom: PublicRoomState) {
+      setRoom(updatedRoom);
+    }
+
+    function handleRoomClosed(data: { message: string }) {
+      setNotice(data.message);
+      setRoom(null);
+      setScreen("menu");
+    }
+
+    function handlePlayerRemoved(data: { message: string }) {
+      setNotice(data.message);
+      setRoom(null);
+      setScreen("menu");
+    }
+
+    socket.on("room:updated", handleRoomUpdated);
+    socket.on("room:closed", handleRoomClosed);
+    socket.on("player:removed", handlePlayerRemoved);
+
+    return () => {
+      socket.off("room:updated", handleRoomUpdated);
+      socket.off("room:closed", handleRoomClosed);
+      socket.off("player:removed", handlePlayerRemoved);
+    };
+  }, [connected, room?.code]);
+
+  function handleRoomCreated(newRoom: PublicRoomState) {
+    setNotice("");
+    setRoom(newRoom);
+    setRole("host");
+    setScreen("room");
   }
 
-  function setupPlayers(names: string[]) {
-    const newGame = new Game({
-      boardSize: 10,
-    });
-
-    names.forEach((name) => {
-      newGame.addPlayer(name);
-    });
-
-    setGame(newGame);
-    setScreen("ship-placement");
-  }
-
-  function startPlaying() {
-    setScreen("game");
+  function handleRoomJoined(newRoom: PublicRoomState) {
+    setNotice("");
+    setRoom(newRoom);
+    setRole("player");
+    setScreen("room");
   }
 
   return (
     <div className="app">
-      {screen === "menu" && <MainMenu onNewGame={startNewGame} />}
+      <header>
+        <span>Battleships</span>
+        <span>{connected ? "Connected" : "Disconnected"}</span>
+      </header>
 
-      {screen === "player-setup" && (
-        <PlayerSetup onStart={setupPlayers} onBack={() => setScreen("menu")} />
+      {notice && (
+        <p role="alert">
+          {notice}
+          <button onClick={() => setNotice("")}>Dismiss</button>
+        </p>
       )}
 
-      {screen === "ship-placement" && game && (
-        <ShipPlacement game={game} onComplete={startPlaying} />
+      {screen === "menu" && (
+        <MainMenu
+          onHost={() => setScreen("host-setup")}
+          onJoin={() => setScreen("join-game")}
+        />
       )}
 
-      {screen === "game" && game && <GameScreen game={game} />}
+      {screen === "host-setup" && (
+        <HostSetup
+          onCreated={handleRoomCreated}
+          onBack={() => setScreen("menu")}
+        />
+      )}
+
+      {screen === "join-game" && (
+        <JoinGame
+          onJoined={handleRoomJoined}
+          onBack={() => setScreen("menu")}
+        />
+      )}
+
+      {screen === "room" &&
+        room &&
+        (role === "host" ? (
+          <HostLobby room={room} />
+        ) : (
+          <PlayerLobby room={room} />
+        ))}
     </div>
   );
 }
+
+export default App;

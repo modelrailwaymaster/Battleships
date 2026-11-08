@@ -1,32 +1,20 @@
-import Button from "../components/Button";
-import Header from "../components/Header";
-
 interface MainMenuProps {
-  onNewGame: () => void;
+  onHost: () => void;
+  onJoin: () => void;
 }
 
-export default function MainMenu({ onNewGame }: MainMenuProps) {
+function MainMenu({ onHost, onJoin }: MainMenuProps) {
   return (
-    <main className="menu-screen">
-      <Header
-        title="BATTLESHIPS"
-        subtitle="A multiplayer naval strategy game"
-      />
+    <main className="main-menu">
+      <h1>Battleships</h1>
+      <p>Multiplayer Battleships</p>
 
-      <div className="menu-content">
-        <div className="menu-icon">⚓</div>
-
-        <h2>Ready for battle?</h2>
-
-        <p>
-          Assemble your fleet, challenge your opponents and be the last player
-          standing.
-        </p>
-
-        <Button onClick={onNewGame}>New game</Button>
+      <div className="menu-buttons">
+        <button onClick={onHost}>Host Game</button>
+        <button onClick={onJoin}>Join Game</button>
       </div>
-
-      <footer> BATTLESHIPS · LOCAL MULTIPLAYER </footer>
     </main>
   );
 }
+
+export default MainMenu;

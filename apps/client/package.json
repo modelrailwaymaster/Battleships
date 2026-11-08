@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "socket.io-client": "^4.8.4"
   },
   "devDependencies": {
-    "@battleships/game-engine": "workspace:^1.0.0",
+    "@battleships/game-engine": "1.0.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
