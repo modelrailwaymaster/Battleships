@@ -1,4 +1,4 @@
-export type RoomStage = "setup" | "lobby" | "playing";
+export type RoomStage = "lobby" | "setup" | "playing";
 export type GameStage = "lobby" | "placement" | "playing" | "finished";
 export type RoomRole = "host" | "player" | "unknown";
 

@@ -1,4 +1,9 @@
-import type { PublicRoomState, RoomPlayer, RoomStage } from "../types.js";
+import type {
+  GameStage,
+  PublicRoomState,
+  RoomPlayer,
+  RoomStage,
+} from "../types.js";
 
 export class Room {
   public readonly code: string;
@@ -7,7 +12,8 @@ export class Room {
 
   public players: Map<string, RoomPlayer> = new Map();
 
-  public stage: RoomStage = "lobby";
+  public roomStage: RoomStage = "lobby";
+  public gameStage: GameStage = "lobby";
   public locked = false;
 
   constructor(code: string, hostSocketId: string, hostName: string) {
@@ -54,7 +60,8 @@ export class Room {
       code: this.code,
       hostName: this.hostName,
       players: [...this.players.values()],
-      stage: this.stage,
+      gameStage: this.gameStage,
+      roomStage: this.roomStage,
       locked: this.locked,
     };
   }

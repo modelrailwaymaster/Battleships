@@ -1,4 +1,5 @@
 import type {
+  GameStage as sharedGameStage,
   PublicRoomState as SharedPublicRoomState,
   RoomPlayer as SharedRoomPlayer,
   RoomRole as SharedRoomRole,
@@ -10,7 +11,5 @@ export type RoomStage = SharedRoomStage;
 export type PublicRoomState = SharedPublicRoomState;
 export type ServerResponse = SharedServerResponse;
 export type RoomRole = SharedRoomRole;
-
-export interface RoomPlayer extends SharedRoomPlayer {
-  shipsPlaced: boolean;
-}
+export type RoomPlayer = SharedRoomPlayer;
+export type GameStage = sharedGameStage;
