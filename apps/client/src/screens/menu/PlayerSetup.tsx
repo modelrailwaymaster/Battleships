@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useToast } from "../../components/Toast";
 import { getGameSocket } from "../../hooks/useGameSocket";
-import type { PublicRoomState, ServerResponse } from "../../types/room";
+import type { PublicRoomState, ServerResponse } from "../../types/types";
 
 interface JoinGameProps {
   onJoined: (room: PublicRoomState, playerId: string) => void;

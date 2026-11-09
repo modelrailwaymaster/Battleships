@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useToast } from "../../components/Toast";
 import { getGameSocket } from "../../hooks/useGameSocket";
-import type { PublicRoomState, ServerResponse } from "../../types/room";
+import type { PublicRoomState, ServerResponse } from "../../types/types";
 
 interface PlayerLobbyProps {
   room: PublicRoomState;
@@ -86,7 +86,7 @@ function PlayerLobby({ room }: PlayerLobbyProps) {
       </section>
 
       <section>
-        {currentPlayer.ready && (
+        {!currentPlayer.ready && (
           <button onClick={toggleReady} disabled={loading || !currentPlayer}>
             {loading
               ? "Updating..."

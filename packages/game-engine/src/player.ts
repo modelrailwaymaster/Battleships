@@ -1,5 +1,5 @@
 import { Board } from "./board";
-import type { PlayerStatus } from "./types";
+import type { PlayerStatus } from "./gameTypes";
 
 export class Player {
   public readonly id: string;

@@ -9,7 +9,7 @@ import MainMenu from "./screens/menu/MainMenu";
 import PlayerLobby from "./screens/menu/PlayerLobby";
 import PlayerSetup from "./screens/menu/PlayerSetup";
 
-import type { PublicRoomState, RoomRole } from "./types/room";
+import type { PublicRoomState, RoomRole } from "./types/types";
 
 function App() {
   const { connected } = useGameSocket();

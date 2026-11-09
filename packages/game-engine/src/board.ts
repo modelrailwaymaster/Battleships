@@ -1,11 +1,11 @@
-import { Ship } from "./ship";
 import type {
     AttackResult,
     Cell,
     CellState,
     Coordinate,
     Orientation,
-} from "./types";
+} from "./gameTypes";
+import { Ship } from "./ship";
 
 export class Board {
   public readonly size: number;

@@ -3,12 +3,12 @@ import { PlayerManager } from "./playerManager";
 import { TurnManager } from "./turnManager";
 
 import type {
-  AttackResult,
-  Coordinate,
-  GameOptions,
-  GameStatus,
-  Orientation,
-} from "./types";
+    AttackResult,
+    Coordinate,
+    GameOptions,
+    GameStatus,
+    Orientation,
+} from "./gameTypes";
 
 export interface GameAttackResult extends AttackResult {
   attackerId: string;

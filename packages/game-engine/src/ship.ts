@@ -1,4 +1,4 @@
-import type { Coordinate } from "./types";
+import type { Coordinate } from "./gameTypes";
 
 export class Ship {
   public readonly id: string;

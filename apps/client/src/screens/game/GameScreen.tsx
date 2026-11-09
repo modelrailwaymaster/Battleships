@@ -1,5 +1,5 @@
 import { useToast } from "../../components/Toast";
-import type { PublicRoomState, RoomRole } from "../../types/room";
+import type { PublicRoomState, RoomRole } from "../../types/types";
 
 import HostPlacement from "./placement/HostPlacement";
 import ShipPlacement from "./placement/ShipPlacement";

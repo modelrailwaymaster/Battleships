@@ -1,20 +1,16 @@
-export type RoomStage = "lobby" | "placement" | "playing" | "finished";
+import type {
+  PublicRoomState as SharedPublicRoomState,
+  RoomPlayer as SharedRoomPlayer,
+  RoomRole as SharedRoomRole,
+  RoomStage as SharedRoomStage,
+  ServerResponse as SharedServerResponse,
+} from "@battleships/game-engine/";
 
-export interface RoomPlayer {
-  id: string;
-  name: string;
-  ready: boolean;
-}
+export type RoomStage = SharedRoomStage;
+export type PublicRoomState = SharedPublicRoomState;
+export type ServerResponse = SharedServerResponse;
+export type RoomRole = SharedRoomRole;
 
-export interface PublicRoomState {
-  code: string;
-  hostName: string;
-  players: RoomPlayer[];
-  stage: RoomStage;
-  locked: boolean;
-}
-
-export interface ServerResponse {
-  success: boolean;
-  message?: string;
+export interface RoomPlayer extends SharedRoomPlayer {
+  shipsPlaced: boolean;
 }
