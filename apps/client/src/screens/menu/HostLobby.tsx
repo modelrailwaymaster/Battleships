@@ -29,6 +29,8 @@ function HostLobby({ room }: HostLobbyProps) {
       }
     });
   }
+  const everyoneReady =
+    room.players.length >= 2 && room.players.every((player) => player.ready);
 
   function toggleLock() {
     emitHostAction("host:set-locked", {
@@ -40,8 +42,8 @@ function HostLobby({ room }: HostLobbyProps) {
     emitHostAction("host:remove-player", { playerId });
   }
 
-  function startPlacement() {
-    emitHostAction("host:start-placement");
+  function startGame() {
+    emitHostAction("host:start-game");
   }
 
   return (
@@ -74,24 +76,21 @@ function HostLobby({ room }: HostLobbyProps) {
                     Remove
                   </button>
                 )}
-                {room.roomStage === "playing" &&
-                  room.gameStage === "placement" &&
-                  (player.shipsPlaced ? " — Placed" : " — Not Placed")}
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      {room.roomStage === "lobby" && (
+      {room.gameStage === "lobby" && (
         <section>
           <button onClick={toggleLock} disabled={loading}>
             {room.locked ? "Unlock lobby" : "Lock lobby"}
           </button>
 
           <button
-            onClick={startPlacement}
-            disabled={loading || room.players.length < 2}
+            onClick={startGame}
+            disabled={loading || room.players.length < 2 || !everyoneReady}
           >
             Start ship placement
           </button>

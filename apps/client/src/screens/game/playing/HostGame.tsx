@@ -7,7 +7,7 @@ interface HostGame {
 function HostGame({ room }: HostGame) {
   return (
     <div>
-      <h1>Host Placement</h1>
+      <h1>Host Game</h1>
       <p>Room code: {room.code}</p>
     </div>
   );

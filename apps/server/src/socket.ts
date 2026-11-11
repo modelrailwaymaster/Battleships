@@ -211,7 +211,7 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
 
-        if (room.gameStage !== "placement" || room.gameStage !== "placement") {
+        if (!(room.gameStage === "lobby" || room.gameStage === "placement")) {
           acknowledge({
             success: false,
             message:
