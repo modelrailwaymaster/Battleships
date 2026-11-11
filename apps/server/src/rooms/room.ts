@@ -55,6 +55,10 @@ export class Room {
     );
   }
 
+  public resetPlayerReady(): void {
+    this.players.forEach((player) => (player.ready = false));
+  }
+
   public getPublicState(): PublicRoomState {
     return {
       code: this.code,

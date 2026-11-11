@@ -94,7 +94,7 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
 
-        if (room.locked || room.stage !== "lobby") {
+        if (room.locked || room.gameStage !== "lobby") {
           acknowledge({
             success: false,
             message: "This game is no longer accepting players.",
@@ -134,7 +134,7 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
 
-        if (room.stage !== "lobby") {
+        if (room.gameStage !== "lobby") {
           acknowledge({
             success: false,
             message: "The lobby can no longer be changed.",
@@ -164,7 +164,7 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
 
-        if (room.stage === "playing" || room.stage === "finished") {
+        if (room.gameStage !== "lobby") {
           acknowledge({
             success: false,
             message: "Players cannot be removed at this stage.",
@@ -197,37 +197,6 @@ export function registerSocketHandlers(io: Server): void {
       },
     );
 
-    // HOST: Move everyone to ship placement
-    socket.on(
-      "host:start-placement",
-      (_payload: undefined, acknowledge: Acknowledgement) => {
-        const room = roomManager.findRoomBySocketId(socket.id);
-
-        if (!room || room.hostSocketId !== socket.id) {
-          acknowledge({
-            success: false,
-            message: "Only the host can start ship placement.",
-          });
-          return;
-        }
-
-        if (room.stage !== "lobby" || room.players.size < 2) {
-          acknowledge({
-            success: false,
-            message: "At least two players must join before starting.",
-          });
-          return;
-        }
-
-        room.stage = "placement";
-        room.locked = true;
-
-        io.to(room.code).emit("room:updated", room.getPublicState());
-
-        acknowledge({ success: true });
-      },
-    );
-
     // PLAYER: Mark themselves as ready
     socket.on(
       "player:set-ready",
@@ -242,10 +211,11 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
 
-        if (room.stage !== "placement") {
+        if (room.gameStage !== "placement" || room.gameStage !== "placement") {
           acknowledge({
             success: false,
-            message: "Players can only mark themselves ready during placement.",
+            message:
+              "Players can only mark themselves ready in the lobby or during placement.",
           });
           return;
         }
@@ -278,7 +248,23 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
 
-        if (room.stage !== "placement" || !room.allPlayersReady()) {
+        if (room.players.size < 2) {
+          acknowledge({
+            success: false,
+            message: "Not enough players to start the game.",
+          });
+          return;
+        }
+
+        if (room.roomStage !== "lobby" || room.gameStage !== "lobby") {
+          acknowledge({
+            success: false,
+            message: "The game can no longer be started.",
+          });
+          return;
+        }
+
+        if (!room.allPlayersReady()) {
           acknowledge({
             success: false,
             message: "Not everyone is ready yet.",
@@ -286,7 +272,49 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
 
-        room.stage = "playing";
+        room.roomStage = "playing";
+        room.gameStage = "placement";
+
+        room.locked = true;
+        room.resetPlayerReady();
+
+        io.to(room.code).emit("room:updated", room.getPublicState());
+
+        acknowledge({ success: true });
+      },
+    );
+
+    // HOST: Finishes the placement
+    socket.on(
+      "host:end-placement",
+      (_payload: undefined, acknowledge: Acknowledgement) => {
+        const room = roomManager.findRoomBySocketId(socket.id);
+
+        if (!room || room.hostSocketId !== socket.id) {
+          acknowledge({
+            success: false,
+            message: "Only the host can end the ship placement.",
+          });
+          return;
+        }
+
+        if (room.roomStage !== "playing" || room.gameStage !== "placement") {
+          acknowledge({
+            success: false,
+            message: "The placement can no longer be ended.",
+          });
+          return;
+        }
+
+        if (!room.allPlayersReady()) {
+          acknowledge({
+            success: false,
+            message: "Not everyone is ready yet.",
+          });
+          return;
+        }
+
+        room.gameStage = "playing";
 
         io.to(room.code).emit("room:updated", room.getPublicState());
 
